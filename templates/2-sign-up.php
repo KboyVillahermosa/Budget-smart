@@ -1,12 +1,14 @@
+
 <?php 
+//change thee codedee
     include_once "../init.php";
     include_once '../connection.php';
     
     // User login check
     if (isset($_SESSION['UserId'])) {
       header('Location: 3-Dashboard.php');
+      exit; // Stop further execution
     }
-
 
     if(isset($_POST['register']))
     {
@@ -22,10 +24,10 @@
             $target = '../static/profileImages/' . $profileImageName;
         }
         
-
         $fullname = $_POST['full_name'];
         $username = $_POST['username'];
         $password = $_POST['password'];
+        $confirmPassword = $_POST['password_confirm'];
         $email = $_POST['email'];
         $signupError = "";
 
@@ -34,57 +36,47 @@
         $fullname = $getFromU->checkInput($fullname);
         $username = $getFromU->checkInput($username);
         $password = $getFromU->checkInput($password);
+        $confirmPassword = $getFromU->checkInput($confirmPassword);
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) 
-        {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $signupError = "Invalid email";
-        } 
-        elseif (strlen($fullname) > 30 || (strlen($fullname)) < 2) 
-        {
-            $signupError = "Name must be between 2-30 characters";
-        } 
-        elseif (strlen($username) > 30 || (strlen($username)) < 3) 
-        {
-            $signupError = "Username must be between 3-30 characters";
-        } 
-        elseif (strlen($password) < 6) 
-        {
-            $signupError = "Password too short";
+        } elseif (strlen($fullname) < 2 || strlen($fullname) > 30) {
+            $signupError = "Name must be between 2 and 30 characters";
+        } elseif (strlen($username) < 3 || strlen($username) > 30) {
+            $signupError = "Username must be between 3 and 30 characters";
+        } elseif (strlen($password) < 6 || strlen($password) > 30) {
+            $signupError = "Password must be between 6 and 30 characters";
+        } elseif ($password !== $confirmPassword) {
+            $signupError = "Password and confirm password do not match";
+        } elseif ($getFromU->checkEmail($email)) {
+            $signupError = "Email already registered";
+        } elseif ($getFromU->checkUsername($username)) {
+            $signupError = "Username already exists";
+        } else {
+            move_uploaded_file($_FILES['inpFile']['tmp_name'], $target);
+            $user_id = $getFromU->create('user', array(
+                'Email' => $email,
+                'Password' => md5($password), // Consider using a stronger hashing algorithm like bcrypt
+                'Full_Name' => $fullname,
+                'Username' => $username,
+                'Photo' => $target,
+                'RegDate' => date("Y-m-d H:i:s")
+            ));
+            $_SESSION['UserId'] = $user_id; 
+            $_SESSION['swal'] = "<script>
+                Swal.fire({
+                    title: 'Yay!',
+                    text: 'Congrats! You are now a registered user',
+                    icon: 'success',
+                    confirmButtonText: 'Done'
+                })
+                </script>";
+            header('Location: 3-Dashboard.php');
+            exit; // Stop further execution
         }
-        elseif (strlen($password) >30) 
-        {
-            $signupError = "Password too long";
-        }
-        else 
-        {
-            if ($getFromU->checkEmail($email) === true) 
-            {
-                $signupError = "Email already registered";
-            } 
-        
-            if ($getFromU->checkUsername($username) === true) 
-            {
-                $signupError = "Username already exists";
-            }
-            else 
-            {
-                move_uploaded_file($_FILES['inpFile']['tmp_name'], $target);
-                $user_id = $getFromU->create('user', array('Email' => $email,'Password' => md5($password), 'Full_Name' => $fullname, 'Username' => $username, 'Photo' =>$target, 'RegDate' => date("Y-m-d H:i:s")));
-                $_SESSION['UserId'] = $user_id; 
-                $_SESSION['swal'] = "<script>
-                    Swal.fire({
-                        title: 'Yay!',
-                        text: 'Congrats! You are now a registered user',
-                        icon: 'success',
-                        confirmButtonText: 'Done'
-                    })
-                    </script>";
-                header('Location: 3-Dashboard.php');
-            }
-        }
-        
     }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

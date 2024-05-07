@@ -1,6 +1,8 @@
 <?php 
     include_once "init.php";
     
+    
+    
     // User login check
     if (isset($_SESSION['UserId'])) {
       header('Location: templates/3-Dashboard.php');
@@ -70,6 +72,7 @@
 
             </div>
             <button type="submit" class="sign-in" name="login">Log In</button>
+            <a href="admin-login.php">admin</a>
 
             <br>
             <?php

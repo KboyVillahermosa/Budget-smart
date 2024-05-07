@@ -1,14 +1,23 @@
 <?php
-
-    $dsn = 'mysql:host=localhost; dbname=expenseman';
-    $user = 'root';
-    $pass = '';
-
-    try {
-        $pdo = new PDO($dsn, $user, $pass);
-    }
-    catch(PDOException $e){
-        echo "Connection Error! ". $e->getMessage();
-    }
+ 
+$conn = "";
+  
+try {
+    $servername = "localhost";
+    $dbname = "expenseman";
+    $username = "root";
+    $password = "";
+  
+    $conn = new PDO(
+        "mysql:host=$servername; dbname=expenseman",
+        $username, $password
+    );
+     
+   $conn->setAttribute(PDO::ATTR_ERRMODE,
+                    PDO::ERRMODE_EXCEPTION);
+}
+catch(PDOException $e) {
+    echo "Connection failed: " . $e->getMessage();
+}
+ 
 ?>
-

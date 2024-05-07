@@ -1,70 +1,60 @@
 <?php
+// Include necessary files
 include_once "init.php";
+include_once 'connection.php';
+include_once 'user.php'; // Assuming your User class is defined in User.php
 
-// Admin access check
-if (!isset($_SESSION['UserId'])) {
-    header('Location: index.php');
-    exit();
+// Define database connection parameters
+$host = 'localhost'; // Assuming localhost is your host
+$dbname = 'expenseman';
+$username = 'root'; // Assuming 'root' is your database username
+$password = ''; // Assuming no password is set
+
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    // Set PDO error mode to exception
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Instantiate User class with the PDO object
+    $user = new User($pdo);
+
+    // Fetch all users with associative arrays
+    $users = $user->userData(PDO::FETCH_ASSOC);
+    
+} catch(PDOException $e) {
+    // Handle database connection error
+    echo "Database connection failed: " . $e->getMessage();
+    exit(); 
 }
-
-// Check if the database connection is established
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
-}
-
-// Fetch all users directly using SQL query
-$query = "SELECT * FROM users";
-$result = mysqli_query($conn, $query);
-
-// Check if the query executed successfully
-if (!$result) {
-    die("Query failed: " . mysqli_error($conn));
-}
-
-// Initialize an array to store fetched users
-$users = [];
-
-// Fetch users as associative array
-while ($row = mysqli_fetch_assoc($result)) {
-    $users[] = $row;
-}
-
-// Free result set
-mysqli_free_result($result);
-
-// Close connection
-mysqli_close($conn);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - All Users</title>
+    <title>Admin - Users</title>
+    <!-- Include any CSS stylesheets or scripts you need -->
 </head>
 <body>
-    <div class="admin-container">
-        <h1>All Users</h1>
-        <div class="users-list">
-            <table>
-                <tr>
-                    <th>User ID</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                </tr>
-                <?php foreach ($users as $user): ?>
-                <tr>
-                    <td><?php echo $user['id']; ?></td>
-                    <td><?php echo $user['username']; ?></td>
-                    <td><?php echo $user['email']; ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </table>
-        </div>
-
-        <!-- Back Button -->
-        <a href="admin_dashboard.php" class="back-btn">Back to Dashboard</a>
-    </div>
+    <h1>Admin - Users</h1>
+    <table border="1">
+        <tr>
+            <th>User ID</th>
+            <th>Email</th>
+            <th>Full Name</th>
+            <th>Username</th>
+            <th>Registration Date</th>
+        </tr>
+        <?php foreach ($users as $user) { ?>
+            <tr>
+                <td><?php echo htmlspecialchars($user['UserId']); ?></td>
+                <td><?php echo htmlspecialchars($user['Email']); ?></td>
+                <td><?php echo htmlspecialchars($user['Full_Name']); ?></td>
+                <td><?php echo htmlspecialchars($user['Username']); ?></td>
+                <td><?php echo htmlspecialchars($user['RegDate']); ?></td>
+            </tr>
+        <?php } ?>
+    </table>
+    <!-- You can include additional HTML for styling or functionality -->
 </body>
 </html>

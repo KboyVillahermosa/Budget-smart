@@ -1,6 +1,6 @@
 <?php
  
-include_once('admin_connection.php');
+include_once('connection.php');
   
 function test_input($data) {
      
